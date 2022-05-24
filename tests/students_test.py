@@ -10,7 +10,6 @@ def test_get_assignments_student_1(client, h_student_1):
     for assignment in data:
         assert assignment['student_id'] == 1
 
-
 def test_get_assignments_student_2(client, h_student_2):
     response = client.get(
         '/student/assignments',
@@ -67,6 +66,7 @@ def test_assingment_resubmitt_error(client, h_student_1):
             'id': 2,
             'teacher_id': 2
         })
+        
     error_response = response.json
     assert response.status_code == 400
     assert error_response['error'] == 'FyleError'

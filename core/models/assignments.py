@@ -1,3 +1,4 @@
+from ast import Assign
 import enum
 from core import db
 from core.apis.decorators import Principal
@@ -66,23 +67,33 @@ class Assignment(db.Model):
     @classmethod
     def submit(cls, _id, teacher_id, principal: Principal):
         assignment = Assignment.get_by_id(_id)
+
         assertions.assert_found(assignment, 'No assignment with this id was found')
         assertions.assert_valid(assignment.student_id == principal.student_id, 'This assignment belongs to some other student')
         assertions.assert_valid(assignment.content is not None, 'assignment with empty content cannot be submitted')
+
+        if assignment.state!=AssignmentStateEnum.DRAFT:
+            return None
 
         assignment.teacher_id = teacher_id
         assignment.state = AssignmentStateEnum.SUBMITTED
         db.session.flush()
 
+        
+
         return assignment
 
     @classmethod
-    def assign_grade(cls, teacher_id, grade, principal:Principal):
-        assignment = Assignment.get_by_teacher_id(teacher_id)
+    def assign_grade(cls, _id, grade, principal:Principal):
+        assignment = Assignment.get_by_teacher_id(_id)
+
         assertions.assert_found(assignment, 'No assignment with this id was found')
         assertions.assert_valid(assignment.teacher_id == principal.teacher_id, 'This assignment belongs to some other student')
         assertions.assert_valid(assignment.content is not None, 'assignment with empty content cannot be submitted')
 
+        if assignment.state!=AssignmentStateEnum.SUBMITTED:
+            return None
+            
         assignment.grade=grade
         db.session.flush()
 

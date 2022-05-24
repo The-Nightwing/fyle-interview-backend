@@ -1,5 +1,6 @@
-from flask import Blueprint
+from flask import Blueprint, Response
 from core import db
+import json
 from core.apis import decorators
 from core.apis.responses import APIResponse
 from core.models.assignments import Assignment
@@ -43,6 +44,13 @@ def submit_assignment(p, incoming_payload):
         teacher_id=submit_assignment_payload.teacher_id,
         principal=p
     )
+
+    if submitted_assignment==None:
+        resp = Response(json.dumps({'error':'FyleError', 'message':'only a draft assignment can be submitted'}), mimetype='application/json')
+        resp.status_code = 400
+        
+        return resp
+
     db.session.commit()
     submitted_assignment_dump = AssignmentSchema().dump(submitted_assignment)
     return APIResponse.respond(data=submitted_assignment_dump)
