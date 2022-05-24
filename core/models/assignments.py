@@ -44,6 +44,10 @@ class Assignment(db.Model):
         return cls.filter(cls.id == _id).first()
 
     @classmethod
+    def get_by_teacher_id(cls, teacher_id):
+        return cls.filter(cls.teacher_id==teacher_id).first()
+
+    @classmethod
     def upsert(cls, assignment_new: 'Assignment'):
         if assignment_new.id is not None:
             assignment = Assignment.get_by_id(assignment_new.id)
@@ -73,5 +77,21 @@ class Assignment(db.Model):
         return assignment
 
     @classmethod
+    def assign_grade(cls, teacher_id, grade, principal:Principal):
+        assignment = Assignment.get_by_teacher_id(teacher_id)
+        assertions.assert_found(assignment, 'No assignment with this id was found')
+        assertions.assert_valid(assignment.teacher_id == principal.teacher_id, 'This assignment belongs to some other student')
+        assertions.assert_valid(assignment.content is not None, 'assignment with empty content cannot be submitted')
+
+        assignment.grade=grade
+        db.session.flush()
+
+        return assignment
+
+    @classmethod
     def get_assignments_by_student(cls, student_id):
         return cls.filter(cls.student_id == student_id).all()
+
+    @classmethod
+    def get_assignment_by_teacher(cls, teacher_id):
+        return cls.filter(cls.teacher_id==teacher_id).all()
